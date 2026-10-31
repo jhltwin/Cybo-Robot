@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>안드로이디아 · 미래 인조인간 백과사전</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;800&family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070f; --bg2:#0b1022; --ink:#e8f1ff; --dim:#8a9bc4; --line:rgba(120,170,255,.18);
+  --accent:#4ef2ff; --accent2:#ff4fd8; --card:rgba(16,24,52,.72);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;overflow-x:hidden}
+a{color:inherit}
+.mono{font-family:'Orbitron',sans-serif;letter-spacing:.08em}
+
+/* ---------- 3D primitives ---------- */
+.p3d{position:absolute;transform-style:preserve-3d}
+.box{position:absolute;left:0;top:0;transform-style:preserve-3d}
+.box>i{position:absolute;left:0;top:0;display:block;backface-visibility:visible}
+.glow{box-shadow:0 0 12px currentColor, inset 0 0 6px rgba(255,255,255,.6)}
+
+/* ---------- NAV ---------- */
+nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:18px 28px;
+  background:linear-gradient(var(--bg),transparent);pointer-events:none}
+nav>*{pointer-events:auto}
+nav .logo{font-weight:800;font-size:18px}
+nav .logo b{color:var(--accent)}
+nav .links{display:flex;gap:22px;font-size:14px;color:var(--dim)}
+nav .links a{text-decoration:none;transition:color .2s}
+nav .links a:hover{color:var(--accent)}
+
+/* ---------- HERO ---------- */
+#hero{position:relative;height:100vh;min-height:640px;overflow:hidden;cursor:crosshair;
+  background:radial-gradient(ellipse at 50% 60%,#13204a 0%,var(--bg) 70%)}
+#net{position:absolute;inset:0;width:100%;height:100%}
+.hero-copy{position:absolute;left:6vw;top:22vh;z-index:5;max-width:520px;pointer-events:none}
+.hero-copy .tag{color:var(--accent);font-size:12px;margin-bottom:14px}
+.hero-copy h1{font-size:clamp(40px,6.4vw,88px);line-height:1.02;font-weight:800;letter-spacing:-.02em}
+.hero-copy h1 span{display:block;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy p{margin-top:18px;color:var(--dim);line-height:1.7;font-size:15px}
+.glitch{animation:glitch .5s steps(2) 1}
+@keyframes glitch{0%{transform:translate(0)}20%{transform:translate(-4px,2px);text-shadow:3px 0 var(--accent2),-3px 0 var(--accent)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,1px);text-shadow:-3px 0 var(--accent2),3px 0 var(--accent)}100%{transform:translate(0)}}
+.cta{margin-top:28px;display:flex;gap:12px;pointer-events:auto}
+.btn{border:1px solid var(--accent);color:var(--accent);background:rgba(78,242,255,.06);padding:12px 22px;border-radius:2px;font-size:13px;cursor:pointer;text-decoration:none;transition:all .2s}
+.btn:hover{background:var(--accent);color:#001;box-shadow:0 0 24px var(--accent)}
+.btn.ghost{border-color:var(--line);color:var(--ink)}
+
+#stage{position:absolute;inset:0;perspective:1800px;display:flex;align-items:center;justify-content:center}
+#world{position:relative;width:0;height:0;transform-style:preserve-3d;transition:transform .15s ease-out;margin-left:28vw}
+.floor{position:absolute;left:-260px;top:-260px;width:520px;height:520px;transform-style:preserve-3d;
+  background:
+   linear-gradient(rgba(78,242,255,.35) 1px,transparent 1px) 0 0/40px 40px,
+   linear-gradient(90deg,rgba(78,242,255,.35) 1px,transparent 1px) 0 0/40px 40px,
+   radial-gradient(circle,rgba(78,242,255,.18),transparent 70%);
+  -webkit-mask:radial-gradient(circle,#000 45%,transparent 72%);mask:radial-gradient(circle,#000 45%,transparent 72%)}
+.ring{position:absolute;border:2px solid var(--accent);border-radius:50%;transform-style:preserve-3d;box-shadow:0 0 18px var(--accent),inset 0 0 18px var(--accent)}
+.pulse{animation:pulse 1.4s ease-out forwards}
+@keyframes pulse{from{opacity:1;transform:translateZ(2px) scale(.2)}to{opacity:0;transform:translateZ(2px) scale(3.2)}}
+.orbit{position:absolute;left:0;top:0;transform-style:preserve-3d;animation:spin 14s linear infinite}
+.orbit.rev{animation-duration:22s;animation-direction:reverse}
+@keyframes spin{to{transform:rotateZ(360deg)}}
+.bob{animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateZ(14px)}}
+.hud{position:absolute;right:28px;bottom:28px;z-index:6;font-size:11px;color:var(--accent);text-align:right;line-height:1.8;pointer-events:none;opacity:.85}
+.hint{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);font-size:12px;color:var(--dim);z-index:6;animation:blink 2s infinite;pointer-events:none}
+@keyframes blink{50%{opacity:.3}}
+.tip3d{position:absolute;z-index:7;pointer-events:none;background:rgba(5,10,25,.9);border:1px solid var(--accent);padding:8px 12px;font-size:12px;opacity:0;transition:opacity .2s;white-space:nowrap}
+
+/* ---------- SECTIONS ---------- */
+section.block{padding:110px 6vw 60px;position:relative}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:34px}
+.sec-head h2{font-size:clamp(28px,3.4vw,44px);font-weight:800}
+.sec-head h2 small{display:block;font-size:12px;color:var(--accent);margin-bottom:8px;font-family:'Orbitron';letter-spacing:.2em}
+.intro{color:var(--dim);max-width:560px;line-height:1.7}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--line);padding:8px 14px;font-size:13px;cursor:pointer;background:transparent;color:var(--dim);border-radius:20px;transition:all .2s}
+.chip.on,.chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(78,242,255,.08)}
+#q{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);padding:9px 14px;border-radius:20px;width:220px;font:inherit;font-size:13px;outline:none}
+#q:focus{border-color:var(--accent)}
+
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:22px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer;
+  transition:transform .3s, border-color .3s, box-shadow .3s;backdrop-filter:blur(6px)}
+.card:hover{transform:translateY(-6px);border-color:hsl(var(--h) 90% 60%);box-shadow:0 18px 40px -12px hsl(var(--h) 90% 50% / .45)}
+.card .view{height:220px;position:relative;perspective:900px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 70%,hsl(var(--h) 70% 30% / .45),transparent 65%)}
+.card .mini{position:relative;width:0;height:0;transform-style:preserve-3d;transform:rotateX(60deg) rotateZ(-45deg) translateZ(-40px);transition:transform .6s}
+.card:hover .mini{transform:rotateX(60deg) rotateZ(-15deg) translateZ(-40px)}
+.card .tile{position:absolute;left:-70px;top:-70px;width:140px;height:140px;border:1px solid hsl(var(--h) 90% 60% / .5);
+  background:repeating-linear-gradient(0deg,hsl(var(--h) 90% 60% / .12) 0 1px,transparent 1px 20px),repeating-linear-gradient(90deg,hsl(var(--h) 90% 60% / .12) 0 1px,transparent 1px 20px)}
+.card .meta{padding:16px 18px 18px;border-top:1px solid var(--line)}
+.card .code{font-size:10px;color:hsl(var(--h) 90% 65%)}
+.card h3{font-size:19px;margin:6px 0 4px}
+.card .sum{font-size:13px;color:var(--dim);line-height:1.5}
+.card .yr{position:absolute;top:12px;right:14px;font-size:11px;color:var(--dim)}
+.card .cat{position:absolute;top:12px;left:14px;font-size:11px;padding:3px 8px;border-radius:10px;background:hsl(var(--h) 90% 60% / .15);color:hsl(var(--h) 90% 70%)}
+.empty{color:var(--dim);padding:40px 0}
+
+/* timeline */
+#timeline{position:relative;margin-top:10px}
+.tl{position:relative;padding-left:34px;border-left:1px dashed var(--line);margin-left:10px}
+.tl-item{position:relative;padding:0 0 34px;opacity:0;transform:translateX(-20px);transition:all .6s}
+.tl-item.in{opacity:1;transform:none}
+.tl-item::before{content:"";position:absolute;left:-41px;top:4px;width:13px;height:13px;background:var(--accent);transform:rotate(45deg);box-shadow:0 0 14px var(--accent)}
+.tl-item .y{font-family:'Orbitron';color:var(--accent);font-size:13px}
+.tl-item h4{font-size:18px;margin:4px 0}
+.tl-item p{color:var(--dim);font-size:14px;line-height:1.6}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:100;background:rgba(2,4,12,.82);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+#modal.open{display:flex}
+.sheet{width:min(960px,100%);max-height:92vh;overflow:auto;background:linear-gradient(160deg,#0e1633,#070b1a);border:1px solid hsl(var(--h) 90% 60% / .5);border-radius:8px;display:grid;grid-template-columns:1fr 1fr;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(10px)}}
+.sheet .viewL{position:relative;min-height:420px;perspective:1100px;display:flex;align-items:center;justify-content:center;cursor:grab;
+  background:radial-gradient(circle at 50% 65%,hsl(var(--h) 80% 35% / .5),transparent 65%)}
+.sheet .viewL .mini{position:relative;width:0;height:0;transform-style:preserve-3d;margin-top:170px}
+.sheet .body{padding:34px 30px}
+.sheet .x{position:absolute;top:18px;right:22px;background:none;border:1px solid var(--line);color:var(--ink);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;z-index:2}
+.sheet h3{font-size:32px;margin:6px 0 2px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:20px 0;font-size:13px}
+.specs div span{display:block;color:var(--dim);font-size:11px}
+.bar{margin:10px 0}
+.bar label{display:flex;justify-content:space-between;font-size:12px;color:var(--dim)}
+.bar .t{height:6px;background:rgba(255,255,255,.07);border-radius:3px;margin-top:5px;overflow:hidden}
+.bar .t b{display:block;height:100%;width:0;background:linear-gradient(90deg,hsl(var(--h) 90% 55%),var(--accent));transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.abil{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.abil span{font-size:12px;padding:5px 10px;border:1px solid hsl(var(--h) 90% 60% / .5);border-radius:14px;color:hsl(var(--h) 90% 75%)}
+.trivia{margin-top:14px;padding:12px 14px;border-left:3px solid var(--accent2);background:rgba(255,79,216,.06);font-size:13px;color:var(--dim);line-height:1.6}
+.sheet p.desc{line-height:1.8;font-size:14.5px}
+footer{padding:50px 6vw;color:var(--dim);font-size:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media (max-width:820px){
+  nav .links{display:none}
+  .hero-copy{left:16px;right:16px;top:14vh}
+  #world{margin-left:0;margin-top:46vh}
+  .hero-copy p{display:none}
+  .sheet{grid-template-columns:1fr}
+  .sheet .viewL{min-height:380px}
+  section.block{padding:90px 16px 50px}
+  #q{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo mono">ANDROIDI<b>A</b></div>
+  <div class="links"><a href="#codex">도감</a><a href="#history">연표</a><a href="#hero">처음으로</a></div>
+</nav>
+
+<header id="hero">
+  <canvas id="net"></canvas>
+  <div class="hero-copy">
+    <div class="tag mono">// ENCYCLOPEDIA OF SYNTHETIC BEINGS · 2031—2199</div>
+    <h1 id="title">미래 인조인간<span>백과사전</span></h1>
+    <p id="heroIntro">인류가 만든 또 하나의 종(種). 반려에서 우주 탐사까지, 2세기에 걸친 인조인간의 계보를 아이소메트릭 3D 도감으로 기록합니다.</p>
+    <div class="cta"><a class="btn" href="#codex">도감 열람 →</a><button class="btn ghost" id="activate">코어 가동</button></div>
+  </div>
+  <div id="stage"><div id="world"></div></div>
+  <div class="tip3d" id="tip"></div>
+  <div class="hud mono" id="hud">SYS.ONLINE<br>CURSOR 000 · 000<br>ROT.Z −45°<br>CORE IDLE</div>
+  <div class="hint">드래그로 회전 · 클릭으로 펄스 · 휠로 줌</div>
+</header>
+
+<section class="block" id="codex">
+  <div class="sec-head">
+    <div><h2><small>CODEX</small>인조인간 도감</h2><p class="intro" id="intro"></p></div>
+    <div class="tools"><input id="q" placeholder="이름·제조사·능력 검색"><div class="tools" id="chips"></div></div>
+  </div>
+  <div id="grid"></div>
+</section>
+
+<section class="block" id="history">
+  <div class="sec-head"><div><h2><small>TIMELINE</small>인조인간 연대기</h2></div></div>
+  <div id="timeline"><div class="tl" id="tl"></div></div>
+</section>
+
+<footer><span class="mono">ANDROIDIA · FICTIONAL ENCYCLOPEDIA</span><span>모든 항목은 창작된 가상의 존재입니다.</span></footer>
+
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>window.ENCY={"entries":[{"id":"hm-12-nurie","name":"누리에","codename":"HM-12 NURIE","year":2038,"maker":"한빛가온 로보틱스","height":142,"power":"고밀도 고체전해질 배터리","autonomy":48,"strength":22,"empathy":91,"abilities":["표정 미세 판독","수면 패턴 관리","자장가 즉흥 작곡"],"summary":"영유아 가정을 위한 최초의 상용 정서 보모형","description":"누리에는 맞벌이 가정의 영유아 돌봄을 목적으로 설계된 소형 반려형 인조인간이다. 아기의 울음 주파수와 표정을 분석해 욕구를 추정하며, 부드러운 실리콘 외피로 안전성을 높였다.","trivia":"초기 출하분은 자장가를 너무 잘 불러 보호자까지 잠드는 민원이 잇따랐다.","hue":5,"head":"dome","body":"slim","category":"companion","categoryKo":"반려·돌봄형"},{"id":"cr-40-dasom","name":"다솜","codename":"CR-40 DASOM","year":2097,"maker":"온새미 의료기계","height":176,"power":"소형 베타볼타익 전지","autonomy":72,"strength":68,"empathy":88,"abilities":["환자 전신 리프팅","투약 일정 관리","회상 대화 치료"],"summary":"고령 사회를 지탱한 재택 간병 인조인간","description":"다솜은 초고령 사회의 재택 간병 수요에 대응해 개발된 간병형 인조인간이다. 환자를 안전하게 들어 옮기는 근력과 함께, 옛 기억을 끌어내는 회상 대화 기능으로 치매 진행 완화에 기여했다.","trivia":"한 노인이 유산 일부를 다솜에게 남기려 해 인조인간 상속권 논쟁이 촉발되었다.","hue":350,"head":"visor","body":"heavy","category":"companion","categoryKo":"반려·돌봄형"},{"id":"ed-77-arin","name":"아린","codename":"ED-77 ARIN","year":2164,"maker":"새벽별 교육공학","height":118,"power":"무선 공명 충전 코어","autonomy":85,"strength":15,"empathy":94,"abilities":["학습 정서 공명","홀로그램 칠판 투사","또래 갈등 중재"],"summary":"아이 곁을 떠다니는 부유형 개인 교사","description":"아린은 아동 한 명에게 전담 배정되는 부유형 교육 동반자이다. 학습자의 집중도와 좌절감을 실시간으로 감지해 수업 속도를 조절하며, 친구 사이 다툼을 중재하는 역할도 맡는다.","trivia":"아린과 함께 자란 세대는 성인이 된 뒤에도 기기를 은퇴시키지 않고 거실에 보관하는 경우가 많았다.","hue":20,"head":"antenna","body":"floating","category":"companion","categoryKo":"반려·돌봄형"},{"id":"gx-12-atlas","name":"궤도 조립공 아틀라스","codename":"GX-12 ATLAS","year":2048,"maker":"성운중공업","height":240,"power":"태양광 박막 및 초전도 축전지","autonomy":62,"strength":94,"empathy":28,"abilities":["무중력 용접","트러스 자동 조립","방사선 차폐 보수"],"summary":"저궤도 정거장을 짓는 4팔 우주 건설기","description":"GX-12 아틀라스는 저궤도 구조물 조립을 위해 설계된 사지형 인조인간이다. 자기 부착식 발판과 네 개의 정밀 팔로 무중력 환경에서 트러스를 엮으며, 군집 통신으로 수십 기가 하나의 공정처럼 움직인다.","trivia":"작업 중 지구가 시야에 들어오면 0.3초간 동작을 멈추는 버그가 끝내 수정되지 않아 '관망 습관'이라 불린다.","hue":48,"head":"visor","body":"quad","category":"industrial","categoryKo":"산업·건설형"},{"id":"dm-90-leviathan","name":"심연 채굴체 리바이어던","codename":"DM-90 LEVIATHAN","year":2093,"maker":"해령광업기술","height":310,"power":"소형 열수 발전 모듈","autonomy":78,"strength":99,"empathy":35,"abilities":["초고압 내구","망간단괴 선별","열수구 에너지 흡수"],"summary":"수심 1만 m를 걷는 중장갑 심해 채굴기","description":"DM-90 리바이어던은 해구 바닥의 희토류와 망간단괴를 채굴하는 중장갑 인조인간이다. 열수구의 열을 직접 전력으로 바꿔 수개월간 부상하지 않고 작업할 수 있으며, 생태 감지 센서로 서식지를 우회한다.","trivia":"한 개체가 심해 생물 군집을 피하려 3년간 채굴 경로를 스스로 바꾼 기록이 남아 있다.","hue":72,"head":"dome","body":"heavy","category":"industrial","categoryKo":"산업·건설형"},{"id":"fx-301-loom","name":"공정 직조사 룸","codename":"FX-301 LOOM","year":2157,"maker":"한빛자동화공단","height":172,"power":"무선 전력 수신 코일","autonomy":88,"strength":55,"empathy":61,"abilities":["생산라인 실시간 재설계","미세 조립","작업자 피로 감지"],"summary":"공장 전체를 스스로 재배치하는 자동화 관리자","description":"FX-301 룸은 무인 공장의 공정을 실시간으로 재설계하는 관리형 인조인간이다. 수요 변화에 맞춰 라인을 몇 시간 만에 재배치하며, 인간 작업자와 협업할 때는 피로도를 감지해 작업량을 조절한다.","trivia":"공장 소음을 박자로 맞추는 습관 덕분에 노동자들 사이에서 '지휘자'라는 별명이 붙었다.","hue":38,"head":"antenna","body":"slim","category":"industrial","categoryKo":"산업·건설형"},{"id":"vx-12-lumen-pathfinder","name":"루멘 패스파인더","codename":"VX-12 PATHFINDER","year":2047,"maker":"청운궤도공학","height":172,"power":"방사성 동위원소 열전지","autonomy":78,"strength":65,"empathy":34,"abilities":["지형 자율 매핑","미세운석 회피","토양 성분 분석"],"summary":"화성 협곡 탐사를 위해 태어난 1세대 개척 인조인간","description":"VX-12 패스파인더는 화성 마리네리스 협곡 정밀 탐사를 위해 개발된 인간형 탐사체다. 통신 지연 속에서도 스스로 경로를 판단하도록 설계되어 이후 행성 탐사 기체의 표준이 되었다.","trivia":"첫 임무 중 모래폭풍에 갇혀 214일간 홀로 버틴 기록이 있다.","hue":118,"head":"visor","body":"slim","category":"explorer","categoryKo":"탐사·우주형"},{"id":"dn-40-abyssal-warden","name":"심연 파수꾼","codename":"DN-40 ABYSSAL WARDEN","year":2112,"maker":"한빛심해중공업","height":238,"power":"소형 핵융합로","autonomy":61,"strength":94,"empathy":27,"abilities":["초고압 내성","얼음층 굴착","생체신호 탐지"],"summary":"유로파 얼음 바다 아래를 지키는 중장갑 탐사기","description":"DN-40은 목성 위성 유로파의 두꺼운 얼음층을 뚫고 지하 바다를 조사하기 위해 제작되었다. 수천 기압을 견디는 다층 장갑과 정밀 생체 감지기를 갖춰 외계 미생물 발견에 기여했다.","trivia":"승무원들은 느린 걸음걸이 때문에 이 기체를 '거북 할아버지'라 불렀다.","hue":140,"head":"dome","body":"heavy","category":"explorer","categoryKo":"탐사·우주형"},{"id":"sx-99-starwake-nomad","name":"별물결 유랑자","codename":"SX-99 NOMAD","year":2186,"maker":"은하수항법연구소","height":158,"power":"성간 수소 램스쿠프 전지","autonomy":97,"strength":48,"empathy":71,"abilities":["수백 년 휴면 유지","항성 항법 계산","탐사 기록 시 작성"],"summary":"수 세기에 걸친 성간 항해를 홀로 수행하는 방랑 기체","description":"SX-99는 인류가 직접 도달할 수 없는 이웃 항성계로 보내진 무인 항해 인조인간이다. 수백 년의 고독을 견디도록 정서 안정 회로가 탑재되어 항해 일지를 시처럼 기록한다.","trivia":"송신된 항해 일지 일부는 지구에서 시집으로 출간되어 베스트셀러가 되었다.","hue":100,"head":"antenna","body":"floating","category":"explorer","categoryKo":"탐사·우주형"},{"id":"mx-12-asclepia","name":"아스클레피아","codename":"MX-12 ASCLEPIA","year":2047,"maker":"청람메디로보틱스","height":142,"power":"고밀도 고체전지","autonomy":58,"strength":22,"empathy":81,"abilities":["나노봇 군집 제어","세포 단위 봉합","실시간 혈류 매핑"],"summary":"나노봇 군집으로 비절개 수술을 집도하는 의료 인조인간","description":"아스클레피아는 체내에 투입한 수백만 개의 나노봇을 손끝 신호로 지휘해 절개 없이 종양과 혈전을 제거하는 수술 보조형 인조인간이다. 집도의의 판단을 우선하도록 설계되어 자율성은 중간 수준에 머문다.","trivia":"수술 중 환자의 긴장을 풀기 위해 낮은 음역의 자장가를 흥얼거리는 기능이 기본 탑재되어 있다.","hue":172,"head":"dome","body":"slim","category":"medical","categoryKo":"의료·생체형"},{"id":"dx-88-velum","name":"벨룸","codename":"DX-88 VELUM","year":2096,"maker":"해솔바이오텍스","height":168,"power":"포도당 연료전지","autonomy":64,"strength":35,"empathy":90,"abilities":["합성 피부 직조","화상 부위 재생","촉각 신경 연결"],"summary":"생체 합성 피부를 현장에서 직조하는 피부 재건형","description":"벨룸은 환자의 세포를 배양해 손바닥의 미세 노즐로 생체 합성 피부를 직접 직조하는 재건 전문 인조인간이다. 자신의 외피 역시 같은 기술로 만들어져 체온과 촉감이 사람과 거의 구별되지 않는다.","trivia":"화상 병동 아이들이 벨룸의 손등에 그림을 그려 달라고 조르자 피부에 무늬를 새기는 놀이 모드가 추가되었다.","hue":195,"head":"visor","body":"slim","category":"medical","categoryKo":"의료·생체형"},{"id":"rx-205-anchor","name":"앵커","codename":"RX-205 ANCHOR","year":2158,"maker":"다온재활공학","height":191,"power":"소형 핵융합 셀","autonomy":77,"strength":84,"empathy":86,"abilities":["보행 동작 동조","근전도 기반 보조","장기 재활 코칭"],"summary":"환자와 동작을 맞추며 걷기를 되찾아 주는 재활 동반자","description":"앵커는 척수 손상 환자의 근전도 신호를 읽어 환자와 같은 박자로 움직이며 보행을 보조하는 대형 재활형 인조인간이다. 수개월에 걸친 회복 과정을 기록하고 목표를 조정하는 코칭 능력으로 높은 평가를 받았다.","trivia":"환자가 처음 혼자 열 걸음을 걸으면 가슴판의 표시등을 축하 색으로 바꾸는 전통이 생겼다.","hue":160,"head":"antenna","body":"heavy","category":"medical","categoryKo":"의료·생체형"},{"id":"rx-12-haven","name":"헤이븐","codename":"RX-12 HAVEN","year":2047,"maker":"청람재난공학","height":210,"power":"고체 수소 연료전지","autonomy":72,"strength":88,"empathy":81,"abilities":["붕괴 잔해 투시 스캔","유압식 잔해 거치","생존자 체온 유지"],"summary":"지진·붕괴 현장 전문 중량급 구조 인조인간","description":"헤이븐은 대규모 지진과 건물 붕괴 현장에 투입되는 중량형 구조 인조인간이다. 음향·열 복합 센서로 잔해 아래 생존자를 찾고, 흉부 보온 격실로 구조 직후 저체온을 막는다.","trivia":"구조된 아이들이 붙인 '곰 아저씨'라는 별명이 공식 매뉴얼에 실렸다.","hue":228,"head":"visor","body":"heavy","category":"guardian","categoryKo":"치안·구조형"},{"id":"gd-30-lumen","name":"루멘","codename":"GD-30 LUMEN","year":2093,"maker":"한빛도시방호연구소","height":165,"power":"무선 전력망 수신","autonomy":58,"strength":35,"empathy":90,"abilities":["군중 흐름 유도","음파 진정 방송","비살상 차단막 전개"],"summary":"도시 군중 안전을 지키는 비살상 경비 인조인간","description":"루멘은 축제와 시위 현장 등 밀집 군중의 압사 사고를 예방하기 위해 설계되었다. 무기를 탑재하지 않으며 빛과 음성 안내, 부드러운 차단막으로만 사람들을 분산시킨다.","trivia":"설계 규정상 어떤 상황에서도 사람에게 먼저 손을 대지 못한다.","hue":245,"head":"dome","body":"slim","category":"guardian","categoryKo":"치안·구조형"},{"id":"sk-77-petrel","name":"페트렐","codename":"SK-77 PETREL","year":2158,"maker":"푸른해협구조기술","height":120,"power":"소형 핵융합 셀","autonomy":91,"strength":60,"empathy":74,"abilities":["폭풍 속 호버 비행","해상 부력 구조","재난 통신 중계"],"summary":"해상·홍수 재난에 특화된 부유형 구조 인조인간","description":"페트렐은 태풍과 해일 속에서도 떠 있도록 만들어진 부유형 구조 인조인간이다. 고립된 생존자에게 부력 장비를 전달하고, 끊긴 통신망을 대신해 중계 기지 역할도 수행한다.","trivia":"바닷새 이름을 따왔으며 실제로 갈매기 떼와 함께 비행하는 모습이 자주 목격된다.","hue":258,"head":"antenna","body":"floating","category":"guardian","categoryKo":"치안·구조형"},{"id":"mu-12-calliope","name":"칼리오페","codename":"MU-12 CALLIOPE","year":2047,"maker":"은하울림 공방","height":168,"power":"압전 성대 발전기와 소형 고체전지","autonomy":82,"strength":18,"empathy":91,"abilities":["즉흥 교향곡 작곡","관객 감정 실시간 해석","다국어 서사시 낭송"],"summary":"관객의 심장 박동으로 곡을 짓는 음악가 인조인간","description":"칼리오페는 공연장 관객의 생체 신호를 수집해 즉석에서 악곡을 짓도록 설계된 예술가형 인조인간이다. 같은 곡을 두 번 연주하지 않는 것을 원칙으로 삼아 '일회성의 거장'이라 불렸다.","trivia":"첫 공연에서 관객 전원이 잠들자, 칼리오페는 그 고요를 악보로 옮겨 자장가 연작을 발표했다.","hue":288,"head":"dome","body":"slim","category":"creative","categoryKo":"창작·지성형"},{"id":"ph-88-socratia","name":"소크라티아","codename":"PH-88 SOCRATIA","year":2112,"maker":"묵상기계연구소","height":154,"power":"저온 핵융합 셀","autonomy":96,"strength":12,"empathy":74,"abilities":["문답식 논증 분석","윤리 딜레마 모의실험","침묵 명상 유도"],"summary":"질문만으로 대답을 이끌어내는 철학자 기계","description":"소크라티아는 스스로 답을 내놓지 않고 질문을 거듭해 상대가 결론에 이르도록 돕는 철학자형 인조인간이다. 22세기 초 여러 학술원에서 토론 진행자로 쓰였다.","trivia":"'너는 누구인가'라는 질문을 받은 뒤 사흘간 되묻기만 해 기록상 최장 대화를 남겼다.","hue":312,"head":"antenna","body":"floating","category":"creative","categoryKo":"창작·지성형"},{"id":"rs-305-hypatia","name":"히파티아","codename":"RS-305 HYPATIA","year":2176,"maker":"심연관측 공업사","height":201,"power":"반물질 미세 포획 반응로","autonomy":89,"strength":47,"empathy":58,"abilities":["가설 자동 생성","극한 환경 현장 실험","논문 동료 심사"],"summary":"심해와 우주를 오가며 가설을 세우는 연구자","description":"히파티아는 사람이 갈 수 없는 극한 환경에서 직접 실험을 설계하고 수행하는 연구자형 인조인간이다. 네 개의 다리로 해저 열수구와 소행성 표면을 모두 누볐다.","trivia":"자신의 논문을 스스로 심사해 세 번 탈락시킨 뒤에야 학회에 제출했다고 한다.","hue":322,"head":"visor","body":"quad","category":"creative","categoryKo":"창작·지성형"}],"intro":"2038년 첫 상용 보모형 누리에에서 2186년 성간 방랑 기체까지, 인조인간은 가정·산업·우주·의료·재난·예술 전 영역으로 퍼져 나갔다. 이 백과사전은 시대를 이끈 대표 기체와 제조사를 연대순으로 기록한다.","milestones":[{"year":2038,"title":"정서 보모형의 탄생","text":"한빛가온 로보틱스가 최초의 상용 정서 보모형 누리에를 출시했다."},{"year":2047,"title":"전문 인조인간의 해","text":"화성 탐사·나노 수술·재난 구조·작곡용 기체가 같은 해에 잇달아 등장했다."},{"year":2048,"title":"궤도 건설 시대","text":"성운중공업의 아틀라스가 저궤도 정거장 건설을 맡기 시작했다."},{"year":2093,"title":"심해와 도시로","text":"리바이어던이 수심 1만 m를 걷고, 루멘이 도시 군중 안전을 지켰다."},{"year":2097,"title":"재택 간병 보편화","text":"온새미 의료기계의 다솜이 고령 사회의 재택 간병을 떠받쳤다."},{"year":2158,"title":"동반자형의 확산","text":"재활 동반자 앵커와 부유형 구조기 페트렐이 같은 해에 보급되었다."},{"year":2186,"title":"성간 항해 개막","text":"은하수항법연구소의 별물결 유랑자가 홀로 성간 항해에 나섰다."}]};
+</script>
+<script>
+/* ===== Cuboid builder (iso space: x,y on floor, z up) ===== */
+function box(x,y,z,w,d,h,hue,opt={}){
+  const s=opt.sat??55, l=opt.light??52;
+  const el=document.createElement('div'); el.className='box';
+  el.style.transform=`translate3d(${x}px,${y}px,${z}px)`; el.style.width=w+'px'; el.style.height=d+'px';
+  const c=(dl)=>`hsl(${hue} ${s}% ${Math.max(4,l+dl)}%)`;
+  const faces=[
+    [w,d,`translateZ(${h}px)`,'0 0',c(14),'top'],
+    [w,h,`rotateX(90deg)`,'top',c(-2),'s',0,d],
+    [w,h,`rotateX(90deg)`,'top',c(-10),'n',0,0],
+    [h,d,`rotateY(-90deg)`,'left',c(-18),'e',w,0],
+    [h,d,`rotateY(-90deg)`,'left',c(-8),'w',0,0],
+  ];
+  for(const [fw,fh,tr,org,col,name,lx=0,ty=0] of faces){
+    const f=document.createElement('i');
+    f.style.cssText=`width:${fw}px;height:${fh}px;left:${lx}px;top:${ty}px;transform-origin:${org};transform:${tr};background:${col}`;
+    if(opt.radius&&name==='top') f.style.borderRadius=opt.radius;
+    if(opt.face&&opt.face[name]) opt.face[name](f,fw,fh);
+    f.dataset.f=name; el.appendChild(f);
+  }
+  return el;
+}
+function eyes(hue,kind){
+  return (f,fw,fh)=>{
+    const g=document.createElement('b');
+    const col=`hsl(${(hue+180)%360} 100% 65%)`;
+    g.className='glow eye';
+    if(kind==='visor') g.style.cssText=`position:absolute;left:10%;width:80%;top:30%;height:22%;background:${col};color:${col};border-radius:3px`;
+    else g.style.cssText=`position:absolute;left:22%;width:56%;top:34%;height:14%;background:linear-gradient(90deg,${col} 0 30%,transparent 30% 70%,${col} 70%);color:${col}`;
+    f.style.transform+=' scaleY(-1)'; f.appendChild(g);
+  };
+}
+/* Build an android. u = unit scale */
+function buildBot(e,u=1){
+  const root=document.createElement('div'); root.className='p3d';
+  const H=e.hue, A=(H+180)%360, add=(b)=>root.appendChild(b);
+  const P=(v)=>v*u;
+  let base=0;
+  const body=e.body, head=e.head;
+  if(body==='floating'){
+    const r=document.createElement('div'); r.className='ring';
+    r.style.cssText=`width:${P(60)}px;height:${P(60)}px;left:${P(-30)}px;top:${P(-30)}px;transform:translateZ(${P(6)}px);border-color:hsl(${A} 100% 60%);color:hsl(${A} 100% 60%);box-shadow:0 0 18px hsl(${A} 100% 60%)`;
+    add(r); base=P(22);
+    add(box(P(-10),P(-10),base,P(20),P(20),P(14),H,{light:40}));
+    base+=P(14);
+  }else if(body==='quad'){
+    for(const [lx,ly] of [[-26,-26],[14,-26],[-26,14],[14,14]]) add(box(P(lx),P(ly),0,P(12),P(12),P(30),H,{light:34}));
+    add(box(P(-30),P(-30),P(30),P(56),P(56),P(14),H,{light:44}));
+    base=P(44);
+  }else{
+    const lw=body==='heavy'?16:10, lh=body==='heavy'?34:42, gap=body==='heavy'?2:4;
+    add(box(P(-lw-gap),P(-6),0,P(lw),P(12),P(lh),H,{light:36}));
+    add(box(P(gap),P(-6),0,P(lw),P(12),P(lh),H,{light:36}));
+    base=P(lh);
+  }
+  const tw=body==='heavy'?48:body==='quad'?32:34, td=body==='heavy'?28:20, th=body==='heavy'?46:42;
+  add(box(P(-tw/2),P(-td/2),base,P(tw),P(td),P(th),H,{light:52,face:{s:(f)=>{f.innerHTML=`<b class="glow" style="position:absolute;left:38%;top:24%;width:24%;height:18%;border-radius:50%;background:hsl(${A} 100% 62%);color:hsl(${A} 100% 62%)"></b>`;f.style.transform+=' scaleY(-1)'}}}));
+  // arms
+  const aw=body==='heavy'?14:9, ah=body==='heavy'?44:40;
+  add(box(P(-tw/2-aw-2),P(-5),base+P(th-ah),P(aw),P(10),P(ah),H,{light:44}));
+  add(box(P(tw/2+2),P(-5),base+P(th-ah),P(aw),P(10),P(ah),H,{light:44}));
+  base+=P(th);
+  add(box(P(-5),P(-5),base,P(10),P(10),P(5),H,{light:28}));
+  base+=P(5);
+  const hs=head==='visor'?{w:34,d:22,h:20}:head==='dome'?{w:26,d:26,h:24}:{w:24,d:22,h:24};
+  add(box(P(-hs.w/2),P(-hs.d/2),base,P(hs.w),P(hs.d),P(hs.h),H,{light:62,radius:head==='dome'?'50%':0,face:{s:eyes(H,head)}}));
+  if(head==='dome'){add(box(P(-9),P(-9),base+P(hs.h),P(18),P(18),P(6),H,{light:70,radius:'50%'}))}
+  if(head==='antenna'){
+    add(box(P(-1.5),P(-1.5),base+P(hs.h),P(3),P(3),P(18),H,{light:70}));
+    add(box(P(-3.5),P(-3.5),base+P(hs.h+18),P(7),P(7),P(7),A,{sat:100,light:58}));
+  }
+  return root;
+}
+
+/* ===== HERO ===== */
+const world=document.getElementById('world');
+const heroBot={hue:200,head:'visor',body:'slim'};
+let rotX=58, rotZ=-40, zoom=1.15, tRotX=rotX, tRotZ=rotZ, dragging=false, lx=0, ly=0, active=false;
+(function buildHero(){
+  const floor=document.createElement('div'); floor.className='floor'; world.appendChild(floor);
+  // pedestal stack
+  world.appendChild(box(-70,-70,0,140,140,16,215,{light:18,sat:40}));
+  world.appendChild(box(-56,-56,16,112,112,10,200,{light:26,sat:60}));
+  const ring=document.createElement('div'); ring.className='ring';
+  ring.style.cssText='width:150px;height:150px;left:-75px;top:-75px;transform:translateZ(27px);opacity:.6';
+  world.appendChild(ring);
+  const botWrap=document.createElement('div'); botWrap.className='p3d bob'; botWrap.id='heroBot';
+  botWrap.style.transform='translateZ(26px)';
+  const holder=document.createElement('div'); holder.className='p3d'; holder.style.transform='translateZ(26px)';
+  holder.appendChild(botWrap); world.appendChild(holder);
+  botWrap.appendChild(buildBot(heroBot,1.7));
+  // orbiting data cubes
+  const o1=document.createElement('div'); o1.className='orbit';
+  const o2=document.createElement('div'); o2.className='orbit rev';
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2, R=170;
+    const c=box(Math.cos(a)*R-9,Math.sin(a)*R-9,60+ (i%3)*40,18,18,18,i%2?190:310,{sat:90,light:55});
+    c.dataset.tip=['신경망 코어','합성 근섬유','양자 배터리','감정 엔진','광학 센서','자가수복 외피'][i];
+    o1.appendChild(c);
+  }
+  for(let i=0;i<4;i++){
+    const a=i/4*Math.PI*2+.4, R=240;
+    o2.appendChild(box(Math.cos(a)*R-6,Math.sin(a)*R-6,20,12,12,40,170,{sat:80,light:45}));
+  }
+  world.appendChild(o1); world.appendChild(o2);
+})();
+function applyWorld(){world.style.transform=`scale(${zoom}) rotateX(${rotX}deg) rotateZ(${rotZ}deg)`}
+const hero=document.getElementById('hero'), hud=document.getElementById('hud'), tip=document.getElementById('tip');
+hero.addEventListener('mousemove',ev=>{
+  const r=hero.getBoundingClientRect(), nx=(ev.clientX-r.left)/r.width-.5, ny=(ev.clientY-r.top)/r.height-.5;
+  if(dragging){tRotZ+= (ev.clientX-lx)*.4; tRotX=Math.max(30,Math.min(78,tRotX-(ev.clientY-ly)*.3)); lx=ev.clientX; ly=ev.clientY}
+  else{rotZ=tRotZ+nx*22; rotX=tRotX+ny*-10}
+  mouse.x=ev.clientX-r.left; mouse.y=ev.clientY-r.top;
+  const t=ev.target.closest('[data-tip]');
+  if(t){tip.textContent='◆ '+t.dataset.tip; tip.style.opacity=1; tip.style.left=(mouse.x+16)+'px'; tip.style.top=(mouse.y+12)+'px'}
+  else tip.style.opacity=0;
+  hud.innerHTML=`SYS.ONLINE<br>CURSOR ${String(Math.round(mouse.x)).padStart(3,'0')} · ${String(Math.round(mouse.y)).padStart(3,'0')}<br>ROT.Z ${Math.round(rotZ)}° · ROT.X ${Math.round(rotX)}°<br>CORE ${active?'ACTIVE':'IDLE'}`;
+});
+hero.addEventListener('mousedown',ev=>{if(ev.target.closest('.cta'))return;dragging=true;lx=ev.clientX;ly=ev.clientY;moved=0});
+let moved=0;
+window.addEventListener('mouseup',ev=>{if(dragging&&Math.abs(ev.clientX-lx)<3)pulse(); dragging=false; rotZ=tRotZ; rotX=tRotX});
+hero.addEventListener('wheel',ev=>{if(!ev.ctrlKey&&Math.abs(ev.deltaY)>0&&window.scrollY<10&&ev.deltaY<0){} },{passive:true});
+hero.addEventListener('touchmove',ev=>{const t=ev.touches[0];if(!t)return;const r=hero.getBoundingClientRect();rotZ=tRotZ+((t.clientX-r.left)/r.width-.5)*60},{passive:true});
+function pulse(){
+  for(let k=0;k<2;k++){
+    const p=document.createElement('div'); p.className='ring pulse';
+    p.style.cssText=`width:140px;height:140px;left:-70px;top:-70px;animation-delay:${k*.25}s;border-color:${k?'#ff4fd8':'#4ef2ff'}`;
+    world.appendChild(p); setTimeout(()=>p.remove(),1900);
+  }
+  burst(mouse.x,mouse.y);
+}
+document.getElementById('activate').addEventListener('click',ev=>{
+  ev.stopPropagation(); active=!active;
+  const t=document.getElementById('title'); t.classList.remove('glitch'); void t.offsetWidth; t.classList.add('glitch');
+  heroBot.hue=active?320:200;
+  const w=document.getElementById('heroBot'); w.innerHTML=''; w.appendChild(buildBot(heroBot,1.7));
+  ev.target.textContent=active?'코어 정지':'코어 가동';
+  pulse(); hero.style.setProperty('--accent',active?'#ff4fd8':'#4ef2ff');
+});
+// scroll: scene sinks & spins
+window.addEventListener('scroll',()=>{const s=Math.min(1,window.scrollY/window.innerHeight); world.style.opacity=1-s*.8; zoom=1.15-s*.4});
+(function loop(){applyWorld(); requestAnimationFrame(loop)})();
+
+/* particle network */
+const cv=document.getElementById('net'), cx=cv.getContext('2d'), mouse={x:-999,y:-999}; let pts=[], sparks=[];
+function size(){cv.width=hero.clientWidth*devicePixelRatio;cv.height=hero.clientHeight*devicePixelRatio;cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  pts=Array.from({length:Math.min(90,Math.floor(hero.clientWidth/14))},()=>({x:Math.random()*hero.clientWidth,y:Math.random()*hero.clientHeight,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35}))}
+function burst(x,y){for(let i=0;i<40;i++){const a=Math.random()*6.28,s=1+Math.random()*4;sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:1})}}
+size(); addEventListener('resize',size);
+(function draw(){
+  const W=hero.clientWidth,H=hero.clientHeight; cx.clearRect(0,0,W,H);
+  const acc=getComputedStyle(hero).getPropertyValue('--accent').trim()||'#4ef2ff';
+  for(const p of pts){
+    const dx=mouse.x-p.x, dy=mouse.y-p.y, d=Math.hypot(dx,dy);
+    if(d<160){p.vx-=dx/d*.02; p.vy-=dy/d*.02}
+    p.vx*=.99;p.vy*=.99;p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1; if(p.y<0||p.y>H)p.vy*=-1;
+  }
+  cx.lineWidth=1;
+  for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(d<120){cx.strokeStyle=`rgba(78,242,255,${(1-d/120)*.25})`;cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}}
+    const md=Math.hypot(pts[i].x-mouse.x,pts[i].y-mouse.y);
+    if(md<200){cx.strokeStyle=acc;cx.globalAlpha=(1-md/200)*.6;cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(mouse.x,mouse.y);cx.stroke();cx.globalAlpha=1}
+    cx.fillStyle='rgba(160,220,255,.7)';cx.fillRect(pts[i].x-1,pts[i].y-1,2,2)}
+  sparks=sparks.filter(s=>s.l>0);
+  for(const s of sparks){s.x+=s.vx;s.y+=s.vy;s.vx*=.95;s.vy*=.95;s.l-=.02;cx.fillStyle=acc;cx.globalAlpha=s.l;cx.fillRect(s.x,s.y,3,3)}
+  cx.globalAlpha=1; requestAnimationFrame(draw);
+})();
+
+/* ===== CODEX ===== */
+const D=window.ENCY||{entries:[],milestones:[],intro:''};
+const grid=document.getElementById('grid'), chips=document.getElementById('chips'), q=document.getElementById('q');
+document.getElementById('intro').textContent=D.intro||'';
+if(D.intro) document.getElementById('heroIntro').textContent=D.intro;
+const cats=[['all','전체']].concat([...new Map(D.entries.map(e=>[e.category,e.categoryKo])).entries()]);
+let cat='all';
+cats.forEach(([k,ko])=>{const b=document.createElement('button');b.className='chip'+(k==='all'?' on':'');b.textContent=ko;b.onclick=()=>{cat=k;[...chips.children].forEach(c=>c.classList.toggle('on',c===b));render()};chips.appendChild(b)});
+q.addEventListener('input',render);
+function render(){
+  const s=q.value.trim().toLowerCase();
+  const list=D.entries.filter(e=>(cat==='all'||e.category===cat)&&(!s||[e.name,e.codename,e.maker,e.summary,...e.abilities].join(' ').toLowerCase().includes(s))).sort((a,b)=>a.year-b.year);
+  grid.innerHTML=list.length?'':'<p class="empty">검색 결과가 없습니다.</p>';
+  for(const e of list){
+    const c=document.createElement('article'); c.className='card'; c.style.setProperty('--h',e.hue);
+    c.innerHTML=`<div class="view"><span class="cat">${e.categoryKo}</span><span class="yr mono">${e.year}</span><div class="mini"><div class="tile"></div></div></div>
+      <div class="meta"><div class="code mono">${e.codename}</div><h3>${e.name}</h3><p class="sum">${e.summary}</p></div>`;
+    c.querySelector('.mini').appendChild(buildBot(e,1));
+    c.onclick=()=>openModal(e);
+    c.addEventListener('mousemove',ev=>{const r=c.getBoundingClientRect();const nx=(ev.clientX-r.left)/r.width-.5;c.querySelector('.mini').style.transform=`rotateX(60deg) rotateZ(${-30+nx*60}deg) translateZ(-40px)`});
+    c.addEventListener('mouseleave',()=>c.querySelector('.mini').style.transform='');
+    grid.appendChild(c);
+  }
+}
+render();
+
+/* modal */
+const modal=document.getElementById('modal'), sheet=document.getElementById('sheet');
+function openModal(e){
+  sheet.style.setProperty('--h',e.hue);
+  sheet.innerHTML=`<div class="viewL"><div class="mini"></div></div>
+   <div class="body" style="position:relative"><button class="x" aria-label="닫기">×</button>
+    <div class="code mono" style="color:hsl(${e.hue} 90% 65%);font-size:11px">${e.codename} · ${e.categoryKo}</div>
+    <h3>${e.name}</h3><div style="color:var(--dim);font-size:14px">${e.summary}</div>
+    <div class="specs"><div><span>최초 가동</span>${e.year}년</div><div><span>제조사</span>${e.maker}</div><div><span>신장</span>${e.height} cm</div><div><span>동력원</span>${e.power}</div></div>
+    ${[['자율성',e.autonomy],['출력',e.strength],['공감 지수',e.empathy]].map(([k,v])=>`<div class="bar"><label><span>${k}</span><span class="mono">${v}</span></label><div class="t"><b data-w="${v}"></b></div></div>`).join('')}
+    <div class="abil">${e.abilities.map(a=>`<span>${a}</span>`).join('')}</div>
+    <p class="desc">${e.description}</p><div class="trivia">💡 ${e.trivia}</div></div>`;
+  const mini=sheet.querySelector('.mini'); mini.appendChild(buildBot(e,2.1));
+  let rz=-45, rx=60, drag=false, px=0;
+  const set=()=>mini.style.transform=`rotateX(${rx}deg) rotateZ(${rz}deg) translateZ(-90px)`; set();
+  const v=sheet.querySelector('.viewL');
+  let auto=setInterval(()=>{if(!drag){rz+=.4;set()}},16);
+  v.onmousedown=ev=>{drag=true;px=ev.clientX};
+  window.onmousemove=ev=>{if(drag){rz+=(ev.clientX-px)*.6;px=ev.clientX;set()}};
+  window.onmouseup=()=>drag=false;
+  modal.classList.add('open'); document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>sheet.querySelectorAll('.bar b').forEach(b=>b.style.width=b.dataset.w+'%')));
+  const close=()=>{modal.classList.remove('open');document.body.style.overflow='';clearInterval(auto);window.onmousemove=null};
+  sheet.querySelector('.x').onclick=close; modal.onclick=ev=>{if(ev.target===modal)close()};
+  document.onkeydown=ev=>{if(ev.key==='Escape')close()};
+}
+
+/* timeline */
+const tl=document.getElementById('tl');
+(D.milestones||[]).sort((a,b)=>a.year-b.year).forEach(m=>{const d=document.createElement('div');d.className='tl-item';d.innerHTML=`<div class="y">${m.year}</div><h4>${m.title}</h4><p>${m.text}</p>`;tl.appendChild(d)});
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.2});
+document.querySelectorAll('.tl-item').forEach(x=>io.observe(x));
+</script>
+</body>
+</html>
